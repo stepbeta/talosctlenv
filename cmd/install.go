@@ -40,14 +40,31 @@ func installVersion(cmd *cobra.Command, args []string) error {
 	
 	cmd.Printf("talosctl version %s successfully installed\n", args[0])
 	
-	// TODO add "--use" flag
-	// rootCmd.SetArgs([]string{"use", args[0]})
-	// if err := rootCmd.Execute(); err != nil {fmt.Println("Error executing use:", err)}
-	cmd.Printf("To switch to that version run `talosctlenv use %s`\n", args[0])
+	// NOTE: in the following we do not return the error, since it's best effort
+	use, err := cmd.Flags().GetBool("use")
+	if err != nil {
+		cmd.Println("Error retrieving 'use' flag:", err)
+		cmd.Println("Skipping action")
+		cmd.Printf("To switch to that version run `talosctlenv use %s`\n", args[0])
+		return nil
+	}
+	if !use {
+		cmd.Printf("To switch to that version run `talosctlenv use %s`\n", args[0])
+		return nil
+	}
+	// here we want to use the install version immediately
+	rootCmd.SetArgs([]string{"use", args[0]})
+	if err := rootCmd.Execute(); err != nil {
+		cmd.Println("Error executing use action:", err)
+		cmd.Println("Skipping action")
+		cmd.Printf("To switch to that version run `talosctlenv use %s`\n", args[0])
+		return nil
+	}
 
 	return nil
 }
 
 func init() {
+	installCmd.LocalFlags().BoolP("use", "u", false, "Immediately use the version once installed (best effort)")
 	rootCmd.AddCommand(installCmd)
 }
