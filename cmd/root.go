@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/stepbeta/talosctlenv/internals/utils"
+	"github.com/stepbeta/talosctlenv/internal/utils"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -29,7 +29,6 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "Enable verbose output")
 	defaultBinPath, err := utils.GetDefaultBinPath()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error determining default bin path:", err)

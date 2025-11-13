@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/stepbeta/talosctlenv/internals/utils"
+	"github.com/stepbeta/talosctlenv/internal/utils"
 )
 
 var listCmd = &cobra.Command{
