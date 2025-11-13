@@ -65,6 +65,6 @@ func installVersion(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	installCmd.LocalFlags().BoolP("use", "u", false, "Immediately use the version once installed (best effort)")
+	installCmd.Flags().BoolP("use", "u", false, "Immediately use the version once installed (best effort)")
 	rootCmd.AddCommand(installCmd)
 }

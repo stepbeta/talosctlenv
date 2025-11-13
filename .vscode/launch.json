@@ -11,7 +11,9 @@
             "mode": "debug",
             "program": "${workspaceFolder}/main.go",
             "args": [
-                "list"
+                "use",
+                "v1.11.3",
+                "-i"
             ]
         },
     ]

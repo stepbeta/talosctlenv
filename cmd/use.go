@@ -41,7 +41,7 @@ func useVersion(cmd *cobra.Command, args []string) error {
 	}
 	fileName := filepath.Join(vrsPath, "talosctl-" + args[0])
 	if _, err := os.Stat(fileName); errors.Is(err, os.ErrNotExist) {
-		install, err := cmd.Flags().GetBool("use")
+		install, err := cmd.Flags().GetBool("install")
 		if err != nil {
 			cmd.Println("Error retrieving 'install' flag:", err)
 			cmd.Println("Skipping action")
@@ -80,6 +80,6 @@ func useVersion(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	useCmd.LocalFlags().BoolP("install", "i", false, "Install the version if not yet present (best effort)")
+	useCmd.Flags().BoolP("install", "i", false, "Install the version if not yet present (best effort)")
 	rootCmd.AddCommand(useCmd)
 }
