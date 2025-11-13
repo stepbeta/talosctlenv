@@ -60,8 +60,17 @@ func useVersion(cmd *cobra.Command, args []string) error {
 		}
 		// here we should have installed the version, we assume it succeeded
 	}
-
-	if err := os.Symlink(fileName, filepath.Join(binPath, "talosctl")); err != nil {
+	target := filepath.Join(binPath, "talosctl")
+	// Check if the symlink already exists
+	if _, err := os.Lstat(target); err == nil {
+		// Remove existing symlink or file
+		if err := os.Remove(target); err != nil {
+			cmd.Println("Error removing existing symlink:", err)
+			return err
+		}
+	}
+	// create new symlink
+	if err := os.Symlink(fileName, target); err != nil {
 		cmd.Println("Error creating symlink:", err)
 		return err
 	}
