@@ -1,11 +1,6 @@
 package cmd
 
 import (
-	"os"
-	"sort"
-	"strings"
-
-	"github.com/Masterminds/semver/v3"
 	"github.com/spf13/cobra"
 	"github.com/stepbeta/talosctlenv/internal/utils"
 )
@@ -15,12 +10,12 @@ var listCmd = &cobra.Command{
 	Short: "List all installed talosctl versions",
 	Long:  `Lists all the talosctl versions that are currently installed on the system.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		binPath, err := utils.GetBinPath(cmd)
+		vrsPath, err := utils.GetVrsPath(cmd)
 		if err != nil {
-			cmd.Println("Error getting bin path:", err)
+			cmd.Println("Error getting vrs path:", err)
 			return err
 		}
-		versions, err := listInstalledVersions(binPath)
+		versions, err := utils.ListInstalledVersions(vrsPath)
 		if err != nil {
 			cmd.Println("Error listing available binaries:", err)
 			return err
@@ -30,10 +25,26 @@ var listCmd = &cobra.Command{
 			return nil
 		}
 		
+		// ignore errors here, it's not important
+		currentVersion := ""
+		binPath, err := utils.GetBinPath(cmd)
+		if err != nil {
+			cmd.Println("Error getting bin path:", err)
+		}			
+		if binPath != "" {
+			currentVersion, err = utils.GetVrsInUse(binPath)
+			if err != nil {
+				cmd.Println("Error getting current version:", err)
+			}
+		}
+		
 		cmd.Println("Available talosctl versions:")
 		for _, v := range versions {
-			// TODO if v is currently in use add a symbol
-			cmd.Println(v.Original())
+			vrs := v.Original()
+			if vrs == currentVersion {
+				vrs += " *"
+			}
+			cmd.Println(vrs)
 		}
 		return nil
 	},
@@ -41,36 +52,4 @@ var listCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(listCmd)
-}
-
-func listInstalledVersions(binPath string) ([]*semver.Version, error) {
-	files, err := os.ReadDir(binPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			// binPath does not exist, return empty list
-			return []*semver.Version{}, nil
-		}
-		return nil, err
-	}
-	versions := make([]*semver.Version, 0)
-	for _, f := range files {
-		fileName := f.Name()
-		if f.IsDir() || !strings.HasPrefix(fileName, "talosctl") {
-			// skip directories and non-talosctl files
-			continue
-		}
-		// by convention the file name is talosctl-VERSION
-		fv := strings.Split(fileName, "-")
-		if fv == nil || len(fv) != 2 {
-			// skip unexpected file names
-			continue
-		}
-		v, err := semver.NewVersion(fv[1])
-		if err == nil {
-			versions = append(versions, v)
-		}
-	}
-	sort.Sort(semver.Collection(versions))
-
-	return versions, nil
 }

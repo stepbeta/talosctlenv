@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v78/github"
+	"github.com/schollz/progressbar/v3"
 )
 
 var errReleaseNotFound = errors.New("release not found")
@@ -40,7 +41,13 @@ type FetchOptions struct {
 func (gh *GithubHelper) FetchAllReleases(opts FetchOptions) ([]*github.RepositoryRelease, error) {
     ctx := context.Background()
 
-    // TODO add progress indicator
+	totPages := 1
+    bar := progressbar.NewOptions(totPages,
+		progressbar.OptionSetWidth(30),
+		progressbar.OptionSetDescription("Downloading releases metadata..."),
+		progressbar.OptionClearOnFinish(),
+	)
+	defer bar.Finish()
 
     var allReleases []*github.RepositoryRelease
     page := 1
@@ -59,6 +66,10 @@ func (gh *GithubHelper) FetchAllReleases(opts FetchOptions) ([]*github.Repositor
         if err != nil {
             return nil, err
         }
+		if resp.LastPage > 1 && totPages != resp.LastPage {
+			bar.ChangeMax(resp.LastPage)
+			bar.Add(1)
+		}
 
         for _, r := range releases {
             if opts.Limit > 0 && len(allReleases) >= opts.Limit {
@@ -78,6 +89,12 @@ func (gh *GithubHelper) FetchAllReleases(opts FetchOptions) ([]*github.Repositor
 
 func (gh *GithubHelper) DownloadRelease(version, vrsPath string) error {
 	ctx := context.Background()
+    bar := progressbar.NewOptions(-1,
+		progressbar.OptionSetWidth(30),
+		progressbar.OptionSetDescription("Downloading release metadata..."),
+		progressbar.OptionClearOnFinish(),
+	)
+	defer bar.Finish()
 	rel, _, err := gh.Client.Repositories.GetReleaseByTag(ctx, "siderolabs", "talos", version)
 	if err != nil {
 		return err
@@ -86,6 +103,7 @@ func (gh *GithubHelper) DownloadRelease(version, vrsPath string) error {
 		return errReleaseNotFound
 	}
 	
+	bar.Describe("Finding the right asset to download...")
 	osAlias := strings.ToLower(runtime.GOOS)
 	archAlias := strings.ToLower(runtime.GOARCH)
 	relName := "talosctl-" + osAlias + "-" + archAlias
@@ -115,6 +133,7 @@ func (gh *GithubHelper) DownloadRelease(version, vrsPath string) error {
 	}
 
 	// download asset using go-github helper (returns ReadCloser)
+	bar.Describe("Downloading...")
 	rc, _, err := gh.Client.Repositories.DownloadReleaseAsset(ctx, "siderolabs", "talos", asset.GetID(), http.DefaultClient)
 	if err != nil {
 		return fmt.Errorf("failed to download asset: %w", err)

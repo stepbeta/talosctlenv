@@ -11,9 +11,9 @@
             "mode": "debug",
             "program": "${workspaceFolder}/main.go",
             "args": [
-                "use",
-                "v1.11.3",
-                "-i"
+                "list-remote",
+                "--limit",
+                "10"
             ]
         },
     ]
