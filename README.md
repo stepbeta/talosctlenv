@@ -4,41 +4,38 @@
 It provides commands to list available versions, install specific versions, and switch between them.
 The tool integrates with GitHub to fetch official releases and supports filtering and sorting using semantic versioning.
 
-# Sub-commands
+See the [docs folder](./docs/) for more information.
 
-## list
+## A note on Authentication
 
-TODO
+This tool makes use of the GitHub APIs.
+You can use it without setting up anything if your use is infrequent.
 
-## list-remote
+But, if you plan on downloading a lot of versions (or frequently check which versions are available),
+I strongly recommend setting up a `GITHUB_TOKEN` to get around the API rate-limiting.
 
-The `list-remote` command retrieves all available `talosctl` versions from the official GitHub repository (`siderolabs/talos`).
+Unauthenticated calls to the APIs are limited to 60 per hour.
+Using a token you can get up to 5,000 per hour.
 
-### Behavior
+During development I observed, for example, that the `list-remote` can make up to at least 12 API calls to retrieve the whole list.
+Do it 5 times and you're done.
 
-- Fetches releases from GitHub.
-- By default, **only stable versions** are shown (pre-release versions like alpha, beta, rc are excluded).
+### How to
 
-### Flags
+To create a token:
+1. go to https://github.com/settings/tokens/new
+2. add a note
+3. set the expiration you like
+4. select scope: `repo > public_repo`.
+5. scroll to the bottom of the page and click "Generate token"
+6. copy the token that will appear
 
-- `--devel`: Include pre-release versions (alpha, beta, rc) in the output.
-  
-- `--limit <number>`: Limit the number of versions displayed. The tool will stop fetching once the limit is reached.
+Now, up to you where you save it.
+In the repo you have a `.env.template` file you can use: put your token there and rename the file to `.env` (don't worry, it's in the .gitignore).
+Then, when you need to run the tool do:
 
-### Authentication
-
-To avoid hitting GitHub’s unauthenticated rate limit (60 requests/hour), you can set the `GITHUB_TOKEN` environment variable:
-
-```bash
-export GITHUB_TOKEN=your_personal_access_token
+```sh
+source .env
 ```
 
-This increases the limit to 5000 requests/hour and ensures smoother operation.
-
-## install
-
-TODO
-
-## use
-
-TODO
+Now run the tool and you'll have the limit upped to 5,000 calls an hour.
