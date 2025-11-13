@@ -3,13 +3,11 @@ package utils
 import (
 	"os"
 	"path/filepath"
-	"runtime"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
 
-// GetDefaultBinPath returns the default bin path for talosctl binaries.
+// GetDefaultBinPath returns the default bin path for in-use talosctl binary.
 func GetDefaultBinPath() (string, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -35,33 +33,33 @@ func GetBinPath(cmd *cobra.Command) (string, error) {
 	return binPath, nil
 }
 
+// GetDefaultVrsPath returns the default bin path for downloaded talosctl binaries.
+func GetDefaultVrsPath() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	binPath := filepath.Join(homeDir, ".talosctlenv", "versions")
+	return binPath, nil
+}
+
+// GetBinPath retrieves the vrs path from the command flags or returns the default path.
+func GetVrsPath(cmd *cobra.Command) (string, error) {
+	vrsPath, err := cmd.Flags().GetString("vrs-path")
+	if err != nil {
+		return "", err
+	}
+	if vrsPath == "" {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+		vrsPath = filepath.Join(homeDir, ".talosctlenv", "versions")
+	}
+	return vrsPath, nil
+}
+
 // EnsurePathExists ensures that the given path exists, creating it if necessary.
 func EnsurePathExists(path string) error {
 	return os.MkdirAll(path, os.ModePerm)
-}
-
-// osAliases returns a list of OS name aliases for the current Go OS name.
-func GetOSAlias() string {
-	goos := strings.ToLower(runtime.GOOS)
-	switch goos {
-	case "darwin":
-		return "darwin"
-	case "windows":
-		return "windows"
-	default:
-		return "linux"
-	}
-}
-
-// archAliases returns a list of architecture name aliases for the current Go architecture name.
-func GetArchAliases() []string {
-	goarch := strings.ToLower(runtime.GOARCH)
-	switch goarch {
-	case "amd64":
-		return []string{"amd64", "x86_64", "x86-64"}
-	case "arm64":
-		return []string{"arm64", "aarch64"}
-	default:
-		return []string{goarch}
-	}
 }

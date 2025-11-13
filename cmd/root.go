@@ -34,5 +34,11 @@ func init() {
 		fmt.Fprintln(os.Stderr, "Error determining default bin path:", err)
 		os.Exit(1)
 	}
-	rootCmd.PersistentFlags().StringP("bin-path", "b", defaultBinPath, "Absolute path to folder storing talosctl binaries")
+	rootCmd.PersistentFlags().StringP("bin-path", "b", defaultBinPath, "Absolute path to folder storing in-use talosctl binary")
+	defaultVrsPath, err := utils.GetDefaultVrsPath()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error determining default vrs path:", err)
+		os.Exit(1)
+	}
+	rootCmd.PersistentFlags().StringP("vrs-path", "d", defaultVrsPath, "Absolute path to folder storing downloaded talosctl binary versions")
 }

@@ -20,21 +20,21 @@ Make sure to check the "use <version>" command after installing a new version`,
 }
 
 func installVersion(cmd *cobra.Command, args []string) error {
-	binPath, err := utils.GetBinPath(cmd)
+	vrsPath, err := utils.GetVrsPath(cmd)
 	if err != nil {
-		cmd.Println("Error getting bin path:", err)
+		cmd.Println("Error getting vrs path:", err)
 		return err
 	}
-	err = utils.EnsurePathExists(binPath)
+	err = utils.EnsurePathExists(vrsPath)
 	if err != nil {
-		cmd.Println("Error ensuring bin path exists:", err)
+		cmd.Println("Error ensuring vrs path exists:", err)
 		return err
 	}
 	// TODO check if the version is already installed
 
 	
 	ghc := github.New()
-	if err := ghc.DownloadRelease(args[0], binPath); err != nil {
+	if err := ghc.DownloadRelease(args[0], vrsPath); err != nil {
 		return err
 	}
 	

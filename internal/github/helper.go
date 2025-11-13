@@ -76,7 +76,7 @@ func (gh *GithubHelper) FetchAllReleases(opts FetchOptions) ([]*github.Repositor
     return allReleases, nil
 }
 
-func (gh *GithubHelper) DownloadRelease(version, binPath string) error {
+func (gh *GithubHelper) DownloadRelease(version, vrsPath string) error {
 	ctx := context.Background()
 	rel, _, err := gh.Client.Repositories.GetReleaseByTag(ctx, "siderolabs", "talos", version)
 	if err != nil {
@@ -136,12 +136,12 @@ func (gh *GithubHelper) DownloadRelease(version, binPath string) error {
 	}
 
 	// move to destination
-	destPath := filepath.Join(binPath, "talosctl-" + version)
+	destPath := filepath.Join(vrsPath, "talosctl-" + version)
 	if err := os.Rename(tmpFile.Name(), destPath); err != nil {
 		return fmt.Errorf("failed to move downloaded file to destination: %w", err)
 	}
 
-	// make executable
+	// make it executable
 	if err := os.Chmod(destPath, 0755); err != nil {
 		return fmt.Errorf("failed to set executable permission: %w", err)
 	}

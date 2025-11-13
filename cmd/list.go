@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"os"
+	"sort"
 	"strings"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/spf13/cobra"
 	"github.com/stepbeta/talosctlenv/internal/utils"
 )
@@ -27,9 +29,11 @@ var listCmd = &cobra.Command{
 			cmd.Println("No talosctl versions installed.")
 			return nil
 		}
+		
 		cmd.Println("Available talosctl versions:")
 		for _, v := range versions {
-			cmd.Println(v)
+			// TODO if v is currently in use add a symbol
+			cmd.Println(v.Original())
 		}
 		return nil
 	},
@@ -39,16 +43,16 @@ func init() {
 	rootCmd.AddCommand(listCmd)
 }
 
-func listInstalledVersions(binPath string) ([]string, error) {
+func listInstalledVersions(binPath string) ([]*semver.Version, error) {
 	files, err := os.ReadDir(binPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			// binPath does not exist, return empty list
-			return []string{}, nil
+			return []*semver.Version{}, nil
 		}
 		return nil, err
 	}
-	versions := make([]string, 0)
+	versions := make([]*semver.Version, 0)
 	for _, f := range files {
 		fileName := f.Name()
 		if f.IsDir() || !strings.HasPrefix(fileName, "talosctl") {
@@ -61,7 +65,12 @@ func listInstalledVersions(binPath string) ([]string, error) {
 			// skip unexpected file names
 			continue
 		}
-		versions = append(versions, fv[1])
+		v, err := semver.NewVersion(fv[1])
+		if err == nil {
+			versions = append(versions, v)
+		}
 	}
+	sort.Sort(semver.Collection(versions))
+
 	return versions, nil
 }
