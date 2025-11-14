@@ -47,7 +47,9 @@ func (gh *GithubHelper) FetchAllReleases(opts FetchOptions) ([]*github.Repositor
 		progressbar.OptionSetDescription("Downloading releases metadata..."),
 		progressbar.OptionClearOnFinish(),
 	)
-	defer bar.Finish()
+	defer func() {
+		_ = bar.Finish()
+	}()
 
 	var allReleases []*github.RepositoryRelease
 	page := 1
@@ -68,7 +70,6 @@ func (gh *GithubHelper) FetchAllReleases(opts FetchOptions) ([]*github.Repositor
 		}
 		if resp.LastPage > 1 && totPages != resp.LastPage {
 			bar.ChangeMax(resp.LastPage)
-			bar.Add(1)
 		}
 
 		for _, r := range releases {
@@ -82,6 +83,7 @@ func (gh *GithubHelper) FetchAllReleases(opts FetchOptions) ([]*github.Repositor
 			break
 		}
 		page = resp.NextPage
+		_ = bar.Add(1)
 	}
 
 	return allReleases, nil
@@ -94,7 +96,9 @@ func (gh *GithubHelper) DownloadRelease(version, vrsPath string) error {
 		progressbar.OptionSetDescription("Downloading release metadata..."),
 		progressbar.OptionClearOnFinish(),
 	)
-	defer bar.Finish()
+	defer func() {
+		_ = bar.Finish()
+	}()
 	rel, _, err := gh.Client.Repositories.GetReleaseByTag(ctx, "siderolabs", "talos", version)
 	if err != nil {
 		return err
@@ -138,7 +142,9 @@ func (gh *GithubHelper) DownloadRelease(version, vrsPath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to download asset: %w", err)
 	}
-	defer rc.Close()
+	defer func() {
+		_ = rc.Close()
+	}()
 
 	// write to temp file then move (safer)
 	tmpFile, err := os.CreateTemp("", "talosctl-download-*")
@@ -150,7 +156,7 @@ func (gh *GithubHelper) DownloadRelease(version, vrsPath string) error {
 		err = err1
 	}
 	if err != nil {
-		os.Remove(tmpFile.Name())
+		_ = os.Remove(tmpFile.Name())
 		return fmt.Errorf("failed to save download: %w", err)
 	}
 
