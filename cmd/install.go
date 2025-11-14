@@ -15,7 +15,7 @@ This binary will be saved into the path specified by the "bin-path" flag.
 It will be named "talosctl-$version".
 
 Make sure to check the "use <version>" command after installing a new version`,
-	Args:  cobra.ExactArgs(1),
+	Args: cobra.ExactArgs(1),
 	RunE: installVersion,
 }
 
@@ -32,14 +32,13 @@ func installVersion(cmd *cobra.Command, args []string) error {
 	}
 	// TODO check if the version is already installed
 
-	
 	ghc := github.New()
 	if err := ghc.DownloadRelease(args[0], vrsPath); err != nil {
 		return err
 	}
-	
+
 	cmd.Printf("talosctl version %s successfully installed\n", args[0])
-	
+
 	// NOTE: in the following we do not return the error, since it's best effort
 	use, err := cmd.Flags().GetBool("use")
 	if err != nil {

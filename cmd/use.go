@@ -18,7 +18,7 @@ var (
 		Long: `Create a symlink to the specified version with the name "talosctl".
 
 Make sure the "bin-path" is included in the $PATH variable.`,
-		Args:  cobra.ExactArgs(1),
+		Args: cobra.ExactArgs(1),
 		RunE: useVersion,
 	}
 )
@@ -39,7 +39,7 @@ func useVersion(cmd *cobra.Command, args []string) error {
 		cmd.Println("Error getting vrs path:", err)
 		return err
 	}
-	fileName := filepath.Join(vrsPath, "talosctl-" + args[0])
+	fileName := filepath.Join(vrsPath, "talosctl-"+args[0])
 	if _, err := os.Stat(fileName); errors.Is(err, os.ErrNotExist) {
 		install, err := cmd.Flags().GetBool("install")
 		if err != nil {

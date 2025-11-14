@@ -8,7 +8,7 @@ import (
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "talosctlenv tool version",
-	Long: `Shows the current version of the talosctlenv tool.`,
+	Long:  `Shows the current version of the talosctlenv tool.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Printf("talosctlenv version v%s\n", Version)
 	},

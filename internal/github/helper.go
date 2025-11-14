@@ -25,71 +25,71 @@ func New() GithubHelper {
 	// Optional: Use token for higher rate limits:
 	// - anonymous: 60 calls per hour
 	// - authenticated: 5,000 calls per hour
-    token := os.Getenv("GITHUB_TOKEN")
-    client := github.NewClient(nil)
-    if token != "" {
-        client = client.WithAuthToken(token)
-    }
+	token := os.Getenv("GITHUB_TOKEN")
+	client := github.NewClient(nil)
+	if token != "" {
+		client = client.WithAuthToken(token)
+	}
 	return GithubHelper{Client: client}
 }
 
 type FetchOptions struct {
-    IncludeDevel bool
-    Limit        int
+	IncludeDevel bool
+	Limit        int
 }
 
 func (gh *GithubHelper) FetchAllReleases(opts FetchOptions) ([]*github.RepositoryRelease, error) {
-    ctx := context.Background()
+	ctx := context.Background()
 
 	totPages := 1
-    bar := progressbar.NewOptions(totPages,
+	bar := progressbar.NewOptions(totPages,
 		progressbar.OptionSetWidth(30),
 		progressbar.OptionSetDescription("Downloading releases metadata..."),
 		progressbar.OptionClearOnFinish(),
 	)
 	defer bar.Finish()
 
-    var allReleases []*github.RepositoryRelease
-    page := 1
+	var allReleases []*github.RepositoryRelease
+	page := 1
 
-    // we use max possible value in order to limit occurrence of rate-limiting
-    limit := 100
-    if opts.Limit < 100 {
-        limit = opts.Limit
-    }
+	// we use max possible value in order to limit occurrence of rate-limiting
+	limit := 100
+	if opts.Limit < 100 {
+		limit = opts.Limit
+	}
 
-    for {
-        releases, resp, err := gh.Client.Repositories.ListReleases(ctx, "siderolabs", "talos", &github.ListOptions{
-            Page:    page,
-            PerPage: limit,
-        })
-        if err != nil {
-            return nil, err
-        }
+	for {
+		releases, resp, err := gh.Client.Repositories.ListReleases(ctx, "siderolabs", "talos", &github.ListOptions{
+			Page:    page,
+			PerPage: limit,
+		})
+		if err != nil {
+			return nil, err
+		}
 		if resp.LastPage > 1 && totPages != resp.LastPage {
 			bar.ChangeMax(resp.LastPage)
 			bar.Add(1)
 		}
 
-        for _, r := range releases {
-            if opts.Limit > 0 && len(allReleases) >= opts.Limit {
-                return allReleases, nil
-            }
-            allReleases = append(allReleases, r)
-        }
+		for _, r := range releases {
+			if opts.Limit > 0 && len(allReleases) >= opts.Limit {
+				return allReleases, nil
+			}
+			allReleases = append(allReleases, r)
+		}
 
-        if resp.NextPage == 0 {
-            break
-        }
-        page = resp.NextPage
-    }
+		if resp.NextPage == 0 {
+			break
+		}
+		page = resp.NextPage
+	}
 
-    return allReleases, nil
+	return allReleases, nil
 }
 
 func (gh *GithubHelper) DownloadRelease(version, vrsPath string) error {
 	ctx := context.Background()
-    bar := progressbar.NewOptions(-1,
+	bar := progressbar.NewOptions(-1,
 		progressbar.OptionSetWidth(30),
 		progressbar.OptionSetDescription("Downloading release metadata..."),
 		progressbar.OptionClearOnFinish(),
@@ -102,7 +102,7 @@ func (gh *GithubHelper) DownloadRelease(version, vrsPath string) error {
 	if rel == nil {
 		return errReleaseNotFound
 	}
-	
+
 	bar.Describe("Finding the right asset to download...")
 	osAlias := strings.ToLower(runtime.GOOS)
 	archAlias := strings.ToLower(runtime.GOARCH)
@@ -139,7 +139,7 @@ func (gh *GithubHelper) DownloadRelease(version, vrsPath string) error {
 		return fmt.Errorf("failed to download asset: %w", err)
 	}
 	defer rc.Close()
-	
+
 	// write to temp file then move (safer)
 	tmpFile, err := os.CreateTemp("", "talosctl-download-*")
 	if err != nil {
@@ -155,7 +155,7 @@ func (gh *GithubHelper) DownloadRelease(version, vrsPath string) error {
 	}
 
 	// move to destination
-	destPath := filepath.Join(vrsPath, "talosctl-" + version)
+	destPath := filepath.Join(vrsPath, "talosctl-"+version)
 	if err := os.Rename(tmpFile.Name(), destPath); err != nil {
 		return fmt.Errorf("failed to move downloaded file to destination: %w", err)
 	}

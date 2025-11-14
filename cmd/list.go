@@ -24,20 +24,20 @@ var listCmd = &cobra.Command{
 			cmd.Println("No talosctl versions installed.")
 			return nil
 		}
-		
+
 		// ignore errors here, it's not important
 		currentVersion := ""
 		binPath, err := utils.GetBinPath(cmd)
 		if err != nil {
 			cmd.Println("Error getting bin path:", err)
-		}			
+		}
 		if binPath != "" {
 			currentVersion, err = utils.GetVrsInUse(binPath)
 			if err != nil {
 				cmd.Println("Error getting current version:", err)
 			}
 		}
-		
+
 		cmd.Println("Available talosctl versions:")
 		for _, v := range versions {
 			vrs := v.Original()

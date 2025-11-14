@@ -15,7 +15,7 @@ var (
 	rootCmd = &cobra.Command{
 		Use:   "talosctlenv",
 		Short: "A talosctl versions manager",
-		Long: `A tool to easily install and use multiple versions of talosctl.`,
+		Long:  `A tool to easily install and use multiple versions of talosctl.`,
 	}
 )
 

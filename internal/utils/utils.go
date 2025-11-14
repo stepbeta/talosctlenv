@@ -102,7 +102,7 @@ func ListInstalledVersions(vrsPath string) ([]*semver.Version, error) {
 
 // GetVrsInUse returns the version of talosctl currently in use from the given binPath.
 func GetVrsInUse(binPath string) (string, error) {
-	linkPath, err := filepath.EvalSymlinks(filepath.Join(binPath, "talosctl")) 
+	linkPath, err := filepath.EvalSymlinks(filepath.Join(binPath, "talosctl"))
 	if err != nil {
 		return "", err
 	}
