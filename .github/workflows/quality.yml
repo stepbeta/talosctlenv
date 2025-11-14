@@ -16,10 +16,19 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Add variables to environment file
+      run: cat ".github/env" >> "$GITHUB_ENV"
+
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.25.4'
+        go-version: '${{ env.GOLANG_VERSION }}'
+        check-latest: true
 
-    - name: gofmt
-      run: test $(gofmt -l -w -s . | wc -l) -eq 0
+    - name: Check formatting
+      uses: Jerome1337/gofmt-action@v1.0.5
+
+    - name: Golangci-lint
+      uses: golangci/golangci-lint-action@v9.0.0
+      with:
+        version: '${{ env.GOLANGCI_LINT_VERSION }}'
