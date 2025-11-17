@@ -10,6 +10,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// GetCachePath returns the path to the releases cache file.
+func GetCachePath() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	binPath := filepath.Join(homeDir, ".talosctlenv", "releases.json")
+	return binPath, nil
+}
+
 // GetDefaultBinPath returns the default bin path for in-use talosctl binary.
 func GetDefaultBinPath() (string, error) {
 	homeDir, err := os.UserHomeDir()

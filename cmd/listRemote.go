@@ -12,6 +12,7 @@ import (
 
 var includeDevel bool
 var limit int
+var forceRefresh bool
 
 var listRemoteCmd = &cobra.Command{
 	Use:   "list-remote",
@@ -26,6 +27,7 @@ Note: By default pre-release versions (alpha, beta, rc) are hidden. Use '--devel
 		releases, err := ghc.FetchAllReleases(github.FetchOptions{
 			IncludeDevel: includeDevel,
 			Limit:        limit,
+			Force:        forceRefresh,
 		})
 		if err != nil {
 			fmt.Println("Error:", err)
@@ -95,5 +97,6 @@ Note: By default pre-release versions (alpha, beta, rc) are hidden. Use '--devel
 func init() {
 	listRemoteCmd.Flags().BoolVar(&includeDevel, "devel", false, "Include pre-release versions (alpha, beta, rc)")
 	listRemoteCmd.Flags().IntVarP(&limit, "limit", "l", 0, "Limit number of versions displayed")
+	listRemoteCmd.Flags().BoolVarP(&forceRefresh, "force", "f", false, "Force refresh of remote versions cache")
 	rootCmd.AddCommand(listRemoteCmd)
 }
