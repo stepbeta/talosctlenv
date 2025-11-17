@@ -10,7 +10,9 @@ jobs:
   build-and-release:
     # Use the latest Ubuntu environment for compilation
     runs-on: ubuntu-latest
-    
+    permissions:
+      contents: write
+
     steps:
       # Step 1: Check out the repository code
       - name: Checkout code
