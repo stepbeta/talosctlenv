@@ -36,10 +36,21 @@ func New() GithubHelper {
 type FetchOptions struct {
 	IncludeDevel bool
 	Limit        int
+	Force        bool
 }
 
+// FetchAllReleases fetches all releases from the GitHub repository
 func (gh *GithubHelper) FetchAllReleases(opts FetchOptions) ([]*github.RepositoryRelease, error) {
 	ctx := context.Background()
+
+	if !opts.Force {
+		cacheData, err := readFromCache()
+		if err == nil && len(cacheData) > 0 {
+			// only return data if no error and some data is present
+			return cacheData, nil
+		}
+		// otherwise load from github
+	}
 
 	totPages := 1
 	bar := progressbar.NewOptions(totPages,
@@ -60,6 +71,7 @@ func (gh *GithubHelper) FetchAllReleases(opts FetchOptions) ([]*github.Repositor
 		limit = opts.Limit
 	}
 
+pages:
 	for {
 		releases, resp, err := gh.Client.Repositories.ListReleases(ctx, "siderolabs", "talos", &github.ListOptions{
 			Page:    page,
@@ -74,7 +86,7 @@ func (gh *GithubHelper) FetchAllReleases(opts FetchOptions) ([]*github.Repositor
 
 		for _, r := range releases {
 			if opts.Limit > 0 && len(allReleases) >= opts.Limit {
-				return allReleases, nil
+				break pages
 			}
 			allReleases = append(allReleases, r)
 		}
@@ -86,9 +98,12 @@ func (gh *GithubHelper) FetchAllReleases(opts FetchOptions) ([]*github.Repositor
 		_ = bar.Add(1)
 	}
 
+	saveToCache(allReleases)
+
 	return allReleases, nil
 }
 
+// DownloadRelease downloads the specified release version to the given vrsPath
 func (gh *GithubHelper) DownloadRelease(version, vrsPath string) error {
 	ctx := context.Background()
 	bar := progressbar.NewOptions(-1,
