@@ -1,0 +1,61 @@
+name: Go Release Builder
+
+# This workflow runs whenever you push a tag that starts with 'v' (e.g., v1.0.0)
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    # Use the latest Ubuntu environment for compilation
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Add variables to environment file
+        run: cat ".github/env" >> "$GITHUB_ENV"
+
+      # Step 2: Set up the Go environment (adjust version if needed)
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '${{ env.GOLANG_VERSION }}'
+          check-latest: true
+
+      # Step 3: Get the tag name from the context
+      - name: Get tag name
+        id: get_tag
+        run: echo "TAG=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+
+      # Step 4: Compile the Go binary and inject the version
+      - name: Compile Go binary
+        # Set the GIT_TAG environment variable for the build command
+        env:
+          GIT_TAG: ${{ steps.get_tag.outputs.TAG }}
+        run: |
+          BINARY_NAME="talosctlenv"
+          
+          # Run the build command as requested, using the injected tag name
+          go build -ldflags "-X github.com/stepbeta/talosctlenv/cmd.Version=$GIT_TAG" -o $BINARY_NAME
+          
+          echo "Successfully compiled $BINARY_NAME with version $GIT_TAG"
+          
+      # Step 5: Create the GitHub Release and upload the compiled binary
+      - name: Create GitHub Release
+        # Uses a popular action for creating releases
+        uses: softprops/action-gh-release@v1
+        with:
+          # Sets the name of the release in the UI
+          name: Release ${{ steps.get_tag.outputs.TAG }}
+          # The tag is already set by the trigger, but we ensure it's used
+          tag_name: ${{ steps.get_tag.outputs.TAG }}
+          # Define the files to upload as release assets
+          files: |
+            talosctlenv
+        env:
+          # GITHUB_TOKEN is automatically provided by GitHub Actions for authentication
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
