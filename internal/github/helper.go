@@ -162,7 +162,7 @@ func (gh *GithubHelper) DownloadRelease(version, vrsPath string) error {
 	}()
 
 	// write to temp file then move (safer)
-	tmpFile, err := os.CreateTemp("", "talosctl-download-*")
+	tmpFile, err := os.CreateTemp(vrsPath, "talosctl-download-*")
 	if err != nil {
 		return fmt.Errorf("failed to create temp file: %w", err)
 	}
