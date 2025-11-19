@@ -73,6 +73,9 @@ Note: By default pre-release versions (alpha, beta, rc) are hidden. Use '--devel
 			}
 		}
 		cmd.Println("Available versions to download:")
+		if limit > 0 && len(versions) > limit {
+			versions = versions[len(versions)-limit:]
+		}
 		for _, v := range versions {
 			vrs := v.Original()
 			if vrs == currentVersion {
@@ -90,6 +93,9 @@ Note: By default pre-release versions (alpha, beta, rc) are hidden. Use '--devel
 
 		if !includeDevel {
 			cmd.Println("\nNote: Pre-release versions (alpha, beta, rc) are hidden. Use '--devel' to include them.")
+		}
+		if !forceRefresh {
+			cmd.Println("\nNote: The results shown above are cached, You can use the '-f' flag to force a refresh of the list.")
 		}
 	},
 }
