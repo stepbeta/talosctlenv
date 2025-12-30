@@ -1,5 +1,7 @@
 # Overview
 
+!!! The project is currently archived. See [vrsr](https://github.com/stepbeta/vrsr) instead. !!!
+
 `talosctlenv` is a CLI tool designed to manage multiple versions of `talosctl` easily.
 It provides commands to list available versions, install specific versions, and switch between them.
 The tool integrates with GitHub to fetch official releases and supports filtering and sorting using semantic versioning.
